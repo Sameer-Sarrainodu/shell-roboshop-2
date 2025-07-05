@@ -29,37 +29,48 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
+# Check if sshpass is installed
+if ! command -v sshpass &> /dev/null; then
+  echo -e "${red}❌ sshpass is not installed. Installing...${nc}"
+  sudo dnf install sshpass -y || { echo -e "${red}❌ Failed to install sshpass${nc}"; exit 1; }
+fi
+
 # Loop through each argument passed
 for service in "$@"; do
   if valid_service "$service"; then
-    echo -e "${yellow}🔁 Connecting to $service...${nc}"
+    # Set the correct domain for frontend
+    if [[ "$service" == "frontend" ]]; then
+      TARGET_HOST="$DOMAIN"
+    else
+      TARGET_HOST="$service.$DOMAIN"
+    fi
 
-    sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no "$USER@$service.$DOMAIN" 'bash -s' <<EOF
-cd /home/ec2-user
-if [ ! -d "shell-roboshop" ]; then
-  git clone https://github.com/Sameer-Sarrainodu/shell-roboshop.git
+    echo -e "${yellow}🔁 Connecting to $service at $TARGET_HOST...${nc}"
+
+    # Attempt SSH connection and execute deployment commands
+    sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no "$USER@$TARGET_HOST" 'bash -s' <<EOF
+if [ ! -d "/home/ec2-user/shell-roboshop" ]; then
+  git clone https://github.com/Sameer-Sarrainodu/shell-roboshop.git /home/ec2-user/shell-roboshop
 fi
-cd shell-roboshop
+cd /home/ec2-user/shell-roboshop
 git reset --hard HEAD
 git pull
-chmod +x $service.sh
-sudo bash $service.sh
+if [ -f "$service.sh" ]; then
+  chmod +x $service.sh
+  sudo bash $service.sh
+else
+  echo "❌ Script $service.sh not found"
+  exit 1
+fi
 EOF
 
-    echo -e "${green}✅ $service deployed successfully.${nc}"
+    # Check if SSH command was successful
+    if [[ $? -eq 0 ]]; then
+      echo -e "${green}✅ $service deployed successfully on $TARGET_HOST.${nc}"
+    else
+      echo -e "${red}❌ Failed to deploy $service on $TARGET_HOST.${nc}"
+    fi
   else
     echo -e "${red}❌ Invalid service name: $service${nc}"
   fi
 done
-
-# Loop through each argument passed
-# for service in "$@"; do
-#   if valid_service "$service"; then
-#     # Set the correct domain for frontend
-#     if [[ "$service" == "frontend" ]]; then
-#       TARGET_HOST="$DOMAIN"
-#     else
-#       TARGET_HOST="$service.$DOMAIN"
-#     fi
-
-
