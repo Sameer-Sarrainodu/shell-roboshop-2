@@ -8,7 +8,7 @@ validate $? "disable default nginx"
 dnf module enable nginx:1.24 -y &>>$logfile
 validate $? "enableing nginx 1.24"
 
-dnf install nginx -y&>>$logfile
+dnf install nginx -y &>>$logfile
 validate $? "installing nginx"
 
 rm -rf /usr/share/nginx/html/* &>>$logfile
