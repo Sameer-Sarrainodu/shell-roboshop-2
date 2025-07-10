@@ -25,7 +25,7 @@ fi
 
 # Clone the repo (skip if already exists)
 if [ ! -d "shell-roboshop" ]; then
-  git clone https://github.com/Sameer-Sarrainodu/shell-roboshop.git
+  git clone https://github.com/Sameer-Sarrainodu/shell-roboshop-2.git
 fi
 
 # Launch EC2 Instances

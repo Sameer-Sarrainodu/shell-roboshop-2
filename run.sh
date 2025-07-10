@@ -50,7 +50,7 @@ for service in "$@"; do
     # Attempt SSH connection and execute deployment commands
     sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no "$USER@$TARGET_HOST" 'bash -s' <<EOF
 if [ ! -d "/home/ec2-user/shell-roboshop" ]; then
-  git clone https://github.com/Sameer-Sarrainodu/shell-roboshop.git /home/ec2-user/shell-roboshop
+  git clone https://github.com/Sameer-Sarrainodu/shell-roboshop-2.git /home/ec2-user/shell-roboshop
 fi
 cd /home/ec2-user/shell-roboshop
 git reset --hard HEAD
